@@ -1,0 +1,351 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator rider {
+  provider = "prisma-client-js"
+  output   = "../rider-dashboard/node_modules/.prisma/client"
+}
+
+generator owner {
+  provider = "prisma-client-js"
+  output   = "../owner-dashboard/node_modules/.prisma/client"
+}
+
+generator marketplace {
+  provider = "prisma-client-js"
+  output   = "../marketplace/node_modules/.prisma/client"
+}
+
+generator seller {
+  provider = "prisma-client-js"
+  output   = "../seller-dashboard/node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model SellerProfile {
+  id       String @id @default(cuid())
+  imageURL String @db.LongText
+  seller   Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  sellerId String @unique
+}
+
+model UserProfile {
+  id       String @id @default(cuid())
+  imageURL String @db.LongText
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String @unique
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String
+  name         String?
+  profile      UserProfile?
+  reviews      Review[]
+  accessToken  String?      @db.LongText
+  refreshToken String?      @db.LongText
+  orders       Order[]
+  address      String?      @db.LongText
+  phone        String?
+  addressName  String?
+  city         String?
+  province     String?
+  blocked      Boolean      @default(false)
+  providerId   String
+  providerName String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Seller {
+  id                String              @id @default(cuid())
+  providerId        String
+  providerName      String
+  email             String
+  name              String?
+  profile           SellerProfile?
+  earnings          Float               @default(0)
+  products          Product[]
+  accessToken       String?             @db.LongText
+  refreshToken      String?             @db.LongText
+  phone             String?
+  address           String?             @db.LongText
+  social            Social[]
+  collectionRequest CollectionRequest[]
+  shippingCosts     ShippingCosts[]
+
+  status               AccountStatus         @default(Onboard)
+  nationalIdentityCard NationalIdentityCard?
+  adminMessages        AdminMessage[]
+
+  jazzCash         JazzCash?
+  easyPaisa        EasyPaisa?
+  bankAccount      BankAccount?
+  withdrawRequests WithdrawRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AdminMessage {
+  id        String   @id @default(cuid())
+  message   String
+  sellerId  String
+  seller    Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NationalIdentityCard {
+  id        String   @id @default(cuid())
+  number    String?
+  front     Bytes    @db.LongBlob
+  back      Bytes    @db.LongBlob
+  sellerId  String   @unique
+  seller    Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model JazzCash {
+  id        String   @id @default(cuid())
+  number    String
+  sellerId  String   @unique
+  seller    Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EasyPaisa {
+  id        String   @id @default(cuid())
+  number    String
+  sellerId  String   @unique
+  seller    Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BankAccount {
+  id         String                @id @default(cuid())
+  number     String
+  numberType BankAccountNumberType
+  bankName   String
+  name       String
+  email      String
+  phone      String
+  sellerId   String                @unique
+  seller     Seller                @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+}
+
+model ShippingCosts {
+  id        String   @id @default(cuid())
+  city      String
+  province  String
+  cost      Float
+  sellerId  String
+  seller    Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WithdrawRequest {
+  id            String         @id @default(cuid())
+  status        WithdrawStatus @default(Pending)
+  paymentMethod PaymentMethod
+  reason        String?
+  sellerId      String
+  seller        Seller         @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Rider {
+  id                 String              @id @default(cuid())
+  username           String
+  passwordHash       String?
+  address            String
+  phone              String
+  email              String
+  name               String
+  collectionRequests CollectionRequest[]
+  orders             Order[]
+  productsCollected  ProductCollected[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+}
+
+model CollectionRequest {
+  id                String             @id @default(cuid())
+  status            PackageStatus      @default(Pending)
+  reason            String?
+  sellerId          String
+  seller            Seller             @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  riderId           String?
+  rider             Rider?             @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  products          Product[]
+  productsCollected ProductCollected[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model ProductCollected {
+  id                  String            @id @default(cuid())
+  productId           String
+  product             Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  riderId             String
+  rider               Rider             @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  quantity            Int
+  collectionRequest   CollectionRequest @relation(fields: [collectionRequestId], references: [id], onDelete: Cascade)
+  collectionRequestId String
+  createdAt           DateTime          @default(now())
+}
+
+model ProductOrdered {
+  id              String        @id @default(cuid())
+  productId       String
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderId         String
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  quantity        Int           @default(0)
+  amount          Float         @default(0) //total: website, shipping, tax, product
+  commissionTaken Float         @default(0)
+  packageStatus   PackageStatus @default(Pending)
+  reason          String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Social {
+  id       String @id @default(cuid())
+  platform String
+  link     String
+  sellerId String
+  seller   Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+}
+
+model Product {
+  id                 String              @id @default(cuid())
+  title              String              @db.MediumText
+  mainImage          Bytes               @db.LongBlob
+  images             ProductImage[]
+  price              Float               @default(0)
+  stockSpecified     Int                 @default(0)
+  stockAcquired      Int                 @default(0)
+  description        String?             @db.LongText
+  reviews            Review[]
+  category           String
+  subCategory        String
+  averageReview      Int                 @default(0)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  status             ProductStatus       @default(EmptyStock)
+  collectionRequests CollectionRequest[]
+  productsCollected  ProductCollected[]
+  productsOrdered    ProductOrdered[]
+  ingredients        Ingredient[]
+  suitableFor        SuitableFor[]
+  seller             Seller              @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  sellerId           String
+}
+
+model SuitableFor {
+  id        String  @id @default(cuid())
+  key       String
+  value     String
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Ingredient {
+  id        String  @id @default(cuid())
+  name      String
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id              String           @id @default(cuid())
+  paymentStatus   PaymentStatus    @default(Pending)
+  reason          String?
+  riderId         String?
+  rider           Rider?           @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  userId          String?
+  user            User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productsOrdered ProductOrdered[]
+  amount          Float
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  data      Bytes   @db.LongBlob
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  content   String @db.LongText
+  stars     Int
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum WithdrawStatus {
+  Done
+  Pending
+  Processing
+  Failed
+}
+
+enum PackageStatus {
+  Done
+  Pending
+  Coming
+  Failed
+}
+
+enum PaymentStatus {
+  Done
+  Pending
+  Failed
+}
+
+enum ProductStatus {
+  EmptyStock
+  Restocking
+  Available
+}
+
+enum PaymentMethod {
+  JazzCash
+  EasyPaisa
+  BankAccount
+}
+
+enum BankAccountNumberType {
+  IBAN
+  AccountNumber
+}
+
+enum AccountStatus {
+  Onboard
+  Active
+  Blocked
+  Verify
+}

@@ -1,0 +1,27 @@
+{
+  "name": "preebee-database",
+  "version": "1.0.0",
+  "description": "Prisma client that is used by all projects.",
+  "main": "build/index.js",
+  "repository": "https://github.com/azterizm/preebee-database",
+  "author": "azterizm",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@prisma/client": "^5.17.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "@types/dotenv": "^8.2.0",
+    "@types/node": "^20.5.3",
+    "prisma": "^5.17.0",
+    "typescript": "^5.1.6"
+  },
+  "scripts": {
+    "db:introspect": "dotenv -- prisma introspect",
+    "db:generate": "dotenv -- prisma generate",
+    "db:format": "dotenv -- prisma format",
+    "db:push": "dotenv -- prisma db push",
+    "db:seed": "dotenv -- prisma db seed"
+  }
+}

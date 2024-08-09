@@ -1,0 +1,15 @@
+[submodule "seller-dashboard"]
+	path = seller-dashboard
+	url = https://github.com/azterizm/preebee-seller
+[submodule "marketplace"]
+	path = marketplace
+	url = https://github.com/azterizm/preebee-beth
+	shallow = true
+[submodule "seller-marketplace"]
+	shallow = true
+[submodule "rider-dashboard"]
+	path = rider-dashboard
+	url = https://github.com/azterizm/preebee-rider
+[submodule "owner-dashboard"]
+	path = owner-dashboard
+	url = https://github.com/azterizm/preebee-owner
